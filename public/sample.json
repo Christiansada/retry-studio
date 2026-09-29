@@ -1,0 +1,12 @@
+{
+  "clients": 40,
+  "launchGapMs": 0,
+  "outageMs": 2000,
+  "latencyMs": 100,
+  "maxAttempts": 6,
+  "baseMs": 500,
+  "capMs": 4000,
+  "deadlineMs": 10000,
+  "retryAfterMs": 0,
+  "seed": 42
+}

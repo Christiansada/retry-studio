@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Explore retry bursts, backoff and deadlines in a browser-local synthetic outage simulator."
+    />
+    <meta name="theme-color" content="#172b30" />
+    <title>Retry Studio — See what happens after failure</title>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to workbench</a>
+    <header>
+      <a class="brand" href="./"
+        ><span class="brand-mark" aria-hidden="true">↻</span> Retry Studio</a
+      ><span class="badge">LOCAL SIMULATOR · v0.1</span
+      ><a href="https://github.com/Christiansada/retry-studio">Source ↗</a>
+    </header>
+    <main id="main">
+      <section class="hero" aria-labelledby="title">
+        <div>
+          <p class="eyebrow">THE MOMENT AFTER FAILURE</p>
+          <h1 id="title">A second try.<br />A different traffic pattern.</h1>
+          <p class="intro">
+            Explore how a burst of clients retries through an outage. Compare
+            backoff and jitter, then follow every attempt.
+          </p>
+        </div>
+        <div class="hero-note">
+          <span class="signal" aria-hidden="true">▂ ▅ █ ▃ ▆ ▂ ▄</span
+          ><strong>Same outage. Two policies.</strong>
+          <p>
+            Synthetic data · Seeded results<br />All computation stays in this
+            tab.
+          </p>
+        </div>
+      </section>
+      <div class="workspace">
+        <aside class="panel controls">
+          <div class="section-top">
+            <p class="eyebrow">01 / CONFIGURE</p>
+            <button type="button" class="text-button" id="reset">
+              Reset sample
+            </button>
+          </div>
+          <h2>Your failure scenario</h2>
+          <p class="muted">
+            All times are milliseconds. One request per client at a time.
+          </p>
+          <form id="scenario-form" novalidate>
+            <fieldset>
+              <legend>Traffic &amp; outage</legend>
+              <div class="fields" id="traffic-fields"></div>
+            </fieldset>
+            <fieldset>
+              <legend>Shared retry budget</legend>
+              <div class="fields" id="policy-fields"></div>
+            </fieldset>
+            <button class="primary" type="submit">
+              Compare policies <span aria-hidden="true">→</span>
+            </button>
+          </form>
+          <div class="import-block">
+            <label for="import">Import scenario JSON</label
+            ><input id="import" type="file" accept=".json,application/json" /><a
+              href="./sample.json"
+              download
+              >Download synthetic example</a
+            >
+          </div>
+        </aside>
+        <div class="output">
+          <p id="status" role="status" aria-live="polite"></p>
+          <p id="error" role="alert" hidden></p>
+          <div id="results"></div>
+        </div>
+      </div>
+      <section class="method panel">
+        <p class="eyebrow">READ THE MODEL, NOT A PROMISE</p>
+        <h2>What this experiment tells you</h2>
+        <div class="method-grid">
+          <div>
+            <h3>Timing is the experiment</h3>
+            <p>
+              The endpoint returns 503 to attempts started before recovery, then
+              200. Fixed latency applies to both. The outage does not react to
+              request volume.
+            </p>
+          </div>
+          <div>
+            <h3>Jitter is a tradeoff</h3>
+            <p>
+              Full jitter samples an integer delay from zero to the backoff
+              bound. It can spread retries, but it may use the attempt budget
+              before recovery. One seed is one realization.
+            </p>
+          </div>
+          <div>
+            <h3>Bring this to a review</h3>
+            <p>
+              Use the exported evidence to discuss policy choices. There is no
+              capacity model, real network, SDK configuration, or proof that a
+              request is safe to repeat.
+            </p>
+          </div>
+        </div>
+        <details>
+          <summary>Timing rules and metric definitions</summary>
+          <p>
+            After failed attempt k, the bound is min(cap, base × 2^(k−1)). The
+            delay is the larger of that policy’s delay and the synthetic
+            Retry-After floor, measured from response completion. The deadline
+            is relative to each client’s launch. Attempts cannot start at or
+            after it; successful responses exactly at the deadline count. A
+            response crossing it is cancelled.
+          </p>
+          <p>
+            Peak retries counts starts in fixed 250 ms buckets aligned to t=0,
+            excluding all first attempts. Amplification is total attempts
+            divided by clients. P95 uses the nearest rank among successful
+            clients only; failures are reported separately. The visual chart may
+            combine buckets and always labels its width.
+          </p>
+          <p>
+            Background:
+            <a
+              href="https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/"
+              >AWS on backoff and jitter</a
+            >
+            and
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Retry-After"
+              >MDN on Retry-After</a
+            >. The floor here is a synthetic duration, not an HTTP header
+            parser.
+          </p>
+        </details>
+      </section>
+    </main>
+    <footer>
+      <span>Retry Studio · Independent open-source software</span
+      ><span>MIT licensed · No account, tracking, or backend</span>
+    </footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
